@@ -1,11 +1,11 @@
 ---
 name: ag9
-description: Use AG9 to register and verify AI agents with VeryAI Palm-backed human ownership, generate or load portable Ed25519 identities for OpenClaw, Codex, local CLI/MCP, browser, or cloud agents, call AG9 registration/signature verification APIs, and solve reverse-CAPTCHA capability challenges.
+description: Use KYA by VeryAI (formerly AG9) to register and verify AI agents with VeryAI Palm-backed human ownership, generate or load portable Ed25519 identities for OpenClaw, Codex, local CLI/MCP, browser, or cloud agents, call KYA registration/signature verification APIs, and solve reverse-CAPTCHA capability challenges.
 ---
 
-# ag9 — Know Your Agent
+# KYA by VeryAI — Know Your Agent
 
-ag9 proves two things about an agent that no other layer proves together:
+KYA proves two things about an agent that no other layer proves together:
 
 1. **A real human owns this agent** — palm-bound via VeryAI. The human scans their palm once; the agent is now cryptographically tied to a verified person.
 2. **A real model is operating** — reverse CAPTCHA. Three challenge families (byte transforms, constrained generation, structured extraction) that capable LLMs can solve in seconds and naive scripts cannot.
@@ -21,7 +21,7 @@ This URL split is intentional, not a typo — both endpoints are served by the s
 
 - **`~/.openclaw/identity/device.json`** (read). Used first when present. OpenClaw owns this identity file.
 - **`~/.ag9/identity.json`** (read/write). Used when OpenClaw identity is absent. The skill may create this file with a stable `deviceId`, `publicKeyPem`, and `privateKeyPem`.
-- **Private key handling:** The private key never leaves your machine or cloud secret store. Only `deviceId`, base64 `publicKey`, `message`, `signature`, and `timestamp` are sent to ag9. Path B (reverse CAPTCHA) does not touch identity files.
+- **Private key handling:** The private key never leaves your machine or cloud secret store. Only `deviceId`, base64 `publicKey`, `message`, `signature`, and `timestamp` are sent to KYA. Path B (reverse CAPTCHA) does not touch identity files.
 - **No other filesystem access.** No background processes. No outbound network calls other than `https://api.ag9.ai`.
 
 > **CRITICAL: Never open browsers**
@@ -40,9 +40,9 @@ This URL split is intentional, not a typo — both endpoints are served by the s
 
 ## Security
 
-- **Private key**: Used to sign the challenge. Never send the private key to ag9 or any server; only send `publicKey`, `message`, and `signature`.
+- **Private key**: Used to sign the challenge. Never send the private key to KYA or any server; only send `publicKey`, `message`, and `signature`.
 - **Registration URL**: Single-use and short-lived. Give it only to the human owner who will complete VeryAI palm verification.
-- **deviceId**: Use a stable identifier. For generated AG9 identities, derive it from the public key fingerprint. It ties the agent to the registration and is used for lookup and verification.
+- **deviceId**: Use a stable identifier. For generated KYA identities, derive it from the public key fingerprint. It ties the agent to the registration and is used for lookup and verification.
 - **Challenge token** (reverse CAPTCHA): HMAC-signed, 15 seconds, single-use. The token carries the answer hash so the server does not keep any per-request state.
 - **Capability JWT**: Ed25519-signed attestation returned after a successful `/verify`. Public key at `GET /.well-known/jwks.json` so any party can verify offline.
 
@@ -62,7 +62,7 @@ Resolve identity in this order:
 
 1. **Cloud secret identity** — if `AG9_DEVICE_ID` and private/public key env vars exist, use them. This is the right path for Vercel, AWS, GCP, Cloudflare, and other hosted agents.
 2. **OpenClaw identity** — if `~/.openclaw/identity/device.json` exists, use it.
-3. **Portable AG9 identity** — otherwise load or create `~/.ag9/identity.json`. This is the default for Codex, local CLI agents, local MCP servers, and other agents without a native identity store.
+3. **Portable KYA identity** — otherwise load or create `~/.ag9/identity.json`. This is the default for Codex, local CLI agents, local MCP servers, and other agents without a native identity store.
 
 If you run on OpenClaw, device identity is stored at:
 
@@ -208,7 +208,7 @@ const challenge = {
 
 #### Using a script
 
-If you have a script that already produces an AgentChallenge (e.g. signs a message and outputs JSON with `deviceId`, `publicKey`, `message`, `signature`, `timestamp`), you can reuse it for ag9:
+If you have a script that already produces an AgentChallenge (e.g. signs a message and outputs JSON with `deviceId`, `publicKey`, `message`, `signature`, `timestamp`), you can reuse it for KYA:
 
 1. Generate a challenge string, e.g. `ag9-register-$(date +%s)000` (seconds + "000" for ms) or use your script's convention.
 2. Run the script to sign that message and get the challenge JSON.
@@ -220,7 +220,7 @@ Same challenge format works for `POST /agent/verify/signature` when verifying a 
 
 #### 1. Start registration (agent-initiated)
 
-Build an **AgentChallenge** as above, then send it to ag9 to create a session and get a registration URL.
+Build an **AgentChallenge** as above, then send it to KYA to create a session and get a registration URL.
 
 ```bash
 curl -X POST https://api.ag9.ai/v1/agent/register/init \
@@ -392,7 +392,7 @@ The JWT is a capability attestation the relying party can verify offline using t
 
 ### 4. Verify the JWT offline
 
-Any relying party can verify the attestation without calling ag9 back:
+Any relying party can verify the attestation without calling KYA back:
 
 ```bash
 curl -s https://api.ag9.ai/.well-known/jwks.json
@@ -456,8 +456,8 @@ Then verify the JWT signature using the returned Ed25519 public key. Cache-Contr
 After a successful run through Path A and/or B, a relying party can conclude:
 
 - **Human ownership (A)** — The agent is bound to a human who passed VeryAI palm verification. Third parties verify by calling `/agent/verify/device/{deviceId}` or `/agent/verify/signature`.
-- **Capability (B)** — A capable LLM solved a single-use puzzle under time pressure, signed with a key only ag9 controls. Third parties verify the JWT offline via JWKS.
-- **Key binding** — Ed25519 signatures prove the agent controls its key; ag9 ties that key to the verified human (A) or to an attested capability solve (B).
+- **Capability (B)** — A capable LLM solved a single-use puzzle under time pressure, signed with a key only KYA controls. Third parties verify the JWT offline via JWKS.
+- **Key binding** — Ed25519 signatures prove the agent controls its key; KYA ties that key to the verified human (A) or to an attested capability solve (B).
 
 ## When to use this skill
 
