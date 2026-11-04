@@ -1,4 +1,4 @@
 interface:
   display_name: "AG9 (retired)"
-  short_description: "AG9 is now KYA by VeryAI; api.ag9.ai is retired"
-  default_prompt: "Explain that AG9 is retired and point me to KYA by VeryAI."
+  short_description: "AG9 is now KYA by Very; api.ag9.ai is retired"
+  default_prompt: "Explain that AG9 is retired and point me to KYA by Very."
